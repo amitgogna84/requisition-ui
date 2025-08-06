@@ -12,7 +12,7 @@ import { ChatService } from './chat.service';
 
 @WebSocketGateway({
   cors: {
-    origin: ["http://localhost:5173", "http://localhost:3001"], // Allow both ports
+    origin: ["http://localhost:5173", "http://localhost:3001", "https://jade-gelato-2c27ab.netlify.app"], // Allow both ports and Netlify
     credentials: true
   }
 })
