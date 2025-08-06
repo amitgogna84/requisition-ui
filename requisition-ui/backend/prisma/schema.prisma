@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Requisition {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  budget      Float
+  enrichedJD  String?
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  conversations Conversation[]
+}
+
+model Vendor {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  company     String
+  skills      String[] // Array of skills
+  rating      Float    @default(0)
+  status      String   @default("active") // active, inactive, suspended
+  description String?  // Company description
+  website     String?  // Company website
+  location    String?  // Company location
+  foundedYear Int?     // Year company was founded
+  employeeCount Int?   // Number of employees
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  conversations Conversation[]
+  messages     Message[]
+  rateCards    RateCard[]
+  consultants  Consultant[]
+  contracts    Contract[]
+  services     Service[]
+}
+
+model RateCard {
+  id          Int      @id @default(autoincrement())
+  title       String   // e.g., "Senior Developer", "Project Manager"
+  hourlyRate  Float    // Rate per hour
+  dailyRate   Float?   // Rate per day
+  monthlyRate Float?   // Rate per month
+  currency    String   @default("USD")
+  experience  String   // e.g., "3-5 years", "5-8 years"
+  skills      String[] // Required skills for this rate
+  vendorId    Int
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Consultant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  title       String   // Job title
+  experience  Int      // Years of experience
+  skills      String[] // Technical skills
+  hourlyRate  Float
+  availability String  // "Available", "Part-time", "Unavailable"
+  bio         String?  // Consultant bio
+  vendorId    Int
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Contract {
+  id          Int      @id @default(autoincrement())
+  title       String   // Contract title
+  description String   // Contract description
+  type        String   // "Fixed Price", "Time & Material", "Retainer"
+  startDate   DateTime
+  endDate     DateTime?
+  value       Float    // Contract value
+  currency    String   @default("USD")
+  status      String   // "Active", "Completed", "Terminated"
+  vendorId    Int
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Service {
+  id          Int      @id @default(autoincrement())
+  name        String   // Service name
+  description String   // Service description
+  category    String   // "Development", "Consulting", "Support", "Training"
+  minDuration Int?     // Minimum duration in days
+  maxDuration Int?     // Maximum duration in days
+  basePrice   Float    // Base price for the service
+  currency    String   @default("USD")
+  vendorId    Int
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Conversation {
+  id          Int      @id @default(autoincrement())
+  title       String
+  type        String   // "requisition", "general", "contract"
+  status      String   @default("active") // active, closed, archived
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  vendorId    Int
+  vendor      Vendor   @relation(fields: [vendorId], references: [id])
+  messages    Message[]
+  requisition Requisition? @relation(fields: [requisitionId], references: [id])
+  requisitionId Int?
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  content        String
+  senderType     String   // "user", "vendor", "system", "ai"
+  messageType    String   @default("text") // text, file, image, system
+  createdAt      DateTime @default(now())
+  
+  // Relations
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  vendorId       Int?
+  vendor         Vendor? @relation(fields: [vendorId], references: [id])
+}
