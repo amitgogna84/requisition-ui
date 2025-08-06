@@ -34,7 +34,7 @@ interface Message {
   timestamp: Date;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://requisition-backend.onrender.com';
 
 const quickSuggestions = [
   "Show me all vendors",
